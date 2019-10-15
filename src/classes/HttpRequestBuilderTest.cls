@@ -20,7 +20,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
- 
+
  /**
  * @description This class provides test methods for HttpRequestBuilder.
  */
@@ -33,20 +33,20 @@ private class HttpRequestBuilderTest
 
     static
     {
-        BODY.createRootElement('Envelope', 'http://schemas.xmlsoap.org/soap/envelope/', 'soapenv');
+        BODY_DOCUMENT.createRootElement('Envelope', 'http://schemas.xmlsoap.org/soap/envelope/', 'soapenv');
     }
-    
+
     private static final Boolean FLAG = true;
-    
+
     private static final String ENDPOINT = 'https://www.example.com/{0}/{1}';
 
     private static final String HEADER_KEY = HttpRequestBuilder.CONTENT_TYPE_HEADER;
     private static final String HEADER_VALUE = HttpRequestBuilder.CONTENT_TYPE_APPLICATION_JSON;
-    
+
     private static final Map<String, String> HEADERS = new Map<String, String> {
         'Accept' => 'application/xml'
     };
-    
+
     private static final String METHOD = HttpRequestBuilder.HTTP_METHOD_POST;
 
     private static final List<String> PARAMS = new List<String> { 'param1' , 'param2' };
@@ -117,17 +117,19 @@ private class HttpRequestBuilderTest
 
         public HttpResponse respond(HttpRequest request)
         {
-            System.assertEquals(BODY, result.getBody());
-            System.assertEquals(FLAG, result.getCompressed());
-            System.assertEquals(String.format(ENDPOINT, this.params), result.getEndpoint());
-            System.assertEquals(HttpRequestBuilder.CONTENT_TYPE_APPLICATION_JSON, result.getHeader(HttpRequestBuilder.CONTENT_TYPE_HEADER));
+            System.assertEquals(BODY, request.getBody());
+            System.assertEquals(FLAG, request.getCompressed());
+            System.assertEquals(String.format(ENDPOINT, this.params), request.getEndpoint());
+            System.assertEquals(HttpRequestBuilder.CONTENT_TYPE_APPLICATION_JSON, request.getHeader(HttpRequestBuilder.CONTENT_TYPE_HEADER));
 
             for(String key : HEADERS.keySet())
             {
-                System.assertEquals(HEADERS.get(key), result.getHeader(key));
+                System.assertEquals(HEADERS.get(key), request.getHeader(key));
             }
 
-            System.assertEquals(METHOD, result.getMethod());
+            System.assertEquals(METHOD, request.getMethod());
+
+            return new HttpResponse();
         }
     }
 
@@ -136,7 +138,7 @@ private class HttpRequestBuilderTest
     {
         Test.setMock(HttpCalloutMock.class, new HttpRequestBuilderMock());
 
-        HttpRequest result = new HttpRequestBuilder()
+        HttpResponse result = new HttpRequestBuilder()
             .setBody(BODY)
             .setCompressed(FLAG)
             .setEndpoint(ENDPOINT)
@@ -213,11 +215,11 @@ private class HttpRequestBuilderTest
     private static void itShouldCreateAJSONRequest()
     {
         HttpRequest result = new HttpRequestBuilder()
-            .json(JSON_DATA)
+            .json(PARAMS)
             .build();
 
         System.assertEquals(HttpRequestBuilder.CONTENT_TYPE_APPLICATION_JSON, result.getHeader(HttpRequestBuilder.CONTENT_TYPE_HEADER));
-        System.assertEquals(JSON.serialize(JSON_DATA), result.getBody());
+        System.assertEquals(JSON.serialize(PARAMS), result.getBody());
     }
 
     @isTest
